@@ -102,7 +102,7 @@ Invoke-RestMethod -Method Post -Uri "$crudUrl/items" -ContentType "application/j
 Invoke-RestMethod -Uri "$crudUrl/metrics"
 ```
 
-Prometheus should be scraping the app (configured to hit `crud-service:80/metrics`). In Prometheus UI check `Status → Targets` for job `crud-app`.
+Prometheus should be scraping the app (configured to hit `crud-service:81/metrics`). In Prometheus UI check `Status → Targets` for job `crud-app`.
 
 Useful Prometheus queries:
 - `up{job="crud-app"}` — whether the app target is up

@@ -12,6 +12,6 @@ data:
       - job_name: 'crud-app'
         metrics_path: /metrics
         static_configs:
-          - targets: ['crud-service:80']
+          - targets: ['crud-service:81']
 
       # keep any future scrape jobs here
