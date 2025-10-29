@@ -7,23 +7,26 @@ What this does
 - Waits for rollouts to finish and prints service URLs.
 - Includes a `clean` tag to delete resources created by the playbook.
 
-Quick usage (PowerShell)
+Quick usage (Linux / Bash)
 
-```powershell
-cd k8s\ansible
+```bash
+cd ansible
 # Syntax check (optional)
 ansible-playbook deploy.yml --syntax-check
 
 # Deploy (default)
 ansible-playbook deploy.yml -i inventory.ini
 
-# Run only the build+deploy tasks (tag 'deploy' is default)
-ansible-playbook deploy.yml -i inventory.ini --tags deploy
+# Build only
+ansible-playbook deploy.yml -i inventory.ini --tags build
 
-# Clean the cluster resources created by the playbook
-ansible-playbook deploy.yml -i inventory.ini --tags clean
+# Apply manifests only
+ansible-playbook deploy.yml -i inventory.ini --tags apply
+
+# Delete/clean resources created by the playbook
+ansible-playbook deploy.yml -i inventory.ini --tags delete
 ```
 
 Notes
-- This playbook runs on `localhost` and assumes `kubectl`, `minikube` and optionally `docker` are available in PATH.
-- If you prefer to use Ansible Kubernetes modules (kubernetes.core), you can replace `kubectl` commands with `k8s` module tasks and pass a `kubeconfig` path.
+This playbook runs on `localhost` and assumes `kubectl`, `minikube` and optionally `docker` are available in PATH.
+If you prefer to use Ansible Kubernetes modules (`kubernetes.core`), you can replace `kubectl` commands with the `k8s` module and pass a `kubeconfig` path.
