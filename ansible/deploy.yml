@@ -1,0 +1,65 @@
+---
+- name: Build, apply, and delete deployments (three-task playbook)
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    app_dir: "{{ playbook_dir }}/.."
+    image_name: "flask-crud-metrics:latest"
+
+  tasks:
+    - name: Build Flask image into Minikube (minikube preferred, docker fallback)
+      block:
+        - name: Try minikube image build
+          command: >
+            minikube image build -t {{ image_name }} {{ app_dir }}\flask-app
+          args:
+            chdir: "{{ app_dir }}"
+          register: build_result
+          changed_when: build_result.rc == 0
+      rescue:
+        - name: Docker build then load into Minikube
+          block:
+            - name: Docker build
+              command: docker build -t {{ image_name }} {{ app_dir }}\flask-app
+              args:
+                chdir: "{{ app_dir }}"
+              register: docker_build
+
+            - name: Load image into Minikube
+              command: minikube image load {{ image_name }}
+              register: image_load
+      tags: [build]
+
+    - name: Apply all YAML files under k8s folder
+      find:
+        paths: "{{ app_dir }}"
+        patterns: "*.yml"
+        recurse: yes
+      register: found_ymls
+
+    - name: Find additional *.yaml files
+      find:
+        paths: "{{ app_dir }}"
+        patterns: "*.yaml"
+        recurse: yes
+      register: found_yamls
+
+    - name: Combine manifest lists and apply each
+      set_fact:
+        manifests: "{{ (found_ymls.files | default([])) + (found_yamls.files | default([])) }}"
+
+    - name: Apply manifests
+      shell: kubectl apply -f "{{ item.path }}"
+      loop: "{{ manifests }}"
+      loop_control:
+        label: "{{ item.path }}"
+      register: apply_results
+      failed_when: false
+      tags: [apply]
+
+    - name: Delete all deployments in default namespace
+      command: kubectl delete deployment --all --namespace=default
+      register: delete_deploys
+      failed_when: false
+      tags: [delete]
